@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Allegro_RefDes_Prefix_Adder", "Allegro_RefDes_Prefix_Adder\Allegro_RefDes_Prefix_Adder.csproj", "{53732476-56B0-4408-9AD2-000D262AD7C6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53732476-56B0-4408-9AD2-000D262AD7C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53732476-56B0-4408-9AD2-000D262AD7C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53732476-56B0-4408-9AD2-000D262AD7C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53732476-56B0-4408-9AD2-000D262AD7C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {58B4F057-8DB8-420D-B1DA-B357F20632A9}
+	EndGlobalSection
+EndGlobal
