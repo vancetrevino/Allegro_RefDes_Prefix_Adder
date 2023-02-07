@@ -24,23 +24,43 @@ Console.WriteLine(@" -- Allegro REF DES Prefix Adder --
 
 // List of all global variables
 string schematicDirectory = "";
+string currentID = " ";
 string prefixID = "";
 string[] csaFileArray;
 
 
 // WARNING LABEL
 Console.WriteLine(" \n\n +++ WARNING!! ");
-Console.WriteLine(" +++ Before running this program, please backup your current schematic directory ");
-Console.WriteLine(" +++ More specifically, backup you 'sch_1' folder");
+Console.WriteLine(" +++ Before running this program, please backup your current schematic directory.");
+Console.WriteLine(" +++ More specifically, backup you 'sch_1' folder to a different directory.");
+Console.WriteLine(" +++ DO NOT put your 'sch_1' folder in the same directory as your current project.");
 Console.WriteLine(" +++ In the event that this program provides incorrect results, ");
 Console.WriteLine(" +++ you can revert back to your current design. \n\n");
 
 GetSchematicDirectory(ref schematicDirectory);
 FindAllCsaFiles(schematicDirectory, out csaFileArray);
-prefixID = AskUserInput("What prefix ID would you like to add to your REF DES?");
-ParseCSAFiles(prefixID, csaFileArray);
+
+currentID = AskUserInput("\nWhat is the current prefix ID for your REF DES? If none, press 'ENTER'.");
+CheckForBlankUserInput(ref currentID);
+
+while (String.IsNullOrEmpty(prefixID))
+{
+    prefixID = AskUserInput("\nWhat prefix ID would you like to add to your REF DES?");
+    if (String.IsNullOrEmpty(prefixID))
+    {
+        Console.WriteLine("Your chosen prefix ID is empty/blank. Please input a valid ID.");
+    }
+}
+
+currentID = currentID.ToUpper();
+prefixID  = prefixID.ToUpper();
+
+ParseCSAFiles(currentID, prefixID, csaFileArray);
 DeleteNonCsaFiles(schematicDirectory);
-Console.WriteLine("");
+
+Console.WriteLine("\nAll files have been overwritten with updated Ref Des.");
+Console.WriteLine("And all non .csa files in the 'sch_1' directory have been deleted.");
+Console.WriteLine("Please open your schematic project and run 'Save Hierarchy'");
 
 void GetSchematicDirectory(ref string directory)
 {
@@ -68,6 +88,14 @@ string AskUserInput(string displayString)
     return userInput;
 }
 
+void CheckForBlankUserInput(ref string userInput)
+{
+    if (String.IsNullOrEmpty(userInput))
+    {
+        userInput = " ";
+    }
+}
+
 void FindAllCsaFiles(string directory, out string[] fileArray)
 {
     fileArray = Directory.GetFiles(directory, "*.csa", SearchOption.AllDirectories);
@@ -83,7 +111,7 @@ void FindAllCsaFiles(string directory, out string[] fileArray)
  * Save the temp file by overwritting the existing .csa file
  * 
  */
-void ParseCSAFiles(string prefixID, string[] fileArray)
+void ParseCSAFiles(string oldID, string newID, string[] fileArray)
 {
     foreach(var file in fileArray)
     {
@@ -95,7 +123,7 @@ void ParseCSAFiles(string prefixID, string[] fileArray)
         {
             foreach(var line in File.ReadLines(file))
             {
-                tempLine = SearchForRefDes(line, prefixID);
+                tempLine = SearchForRefDes(line, oldID, newID);
                 outputFile.WriteLine(tempLine);
             }
 
@@ -107,65 +135,98 @@ void ParseCSAFiles(string prefixID, string[] fileArray)
     }
 }
 
-string SearchForRefDes(string csaFileLine, string prefixID)
+string SearchForRefDes(string csaFileLine, string oldID, string newID)
 {
     string outputResult = csaFileLine;
+    string matchResultValue = "";
     int matchResultIndex = 0;
     // match.Value   match.Index
 
-    string resistorPattern  = @"R[0-9]+$";
-    string capacitorPattern = @"C[0-9]+$";
-    string inductorPattern  = @"L[0-9]+$";
-    string connectorPattern = @"J[0-9]+$";
-    string microPartPattern = @"U[0-9]+$";
-    string crystalPattern   = @"Y[0-9]+$";
-    string testPointPattern = @"TP[0-9]+$";
+    string resistorPattern   = oldID + @"R[0-9]+$";
+    string capacitorPattern  = oldID + @"C[0-9]+$";
+    string inductorPattern   = oldID + @"L[0-9]+$";
+    string transistorPattern = oldID + @"Q[0-9]+$";
+    string diodePattern      = oldID + @"D[0-9]+$";
+    string connectorPattern  = oldID + @"J[0-9]+$";
+    string microPartPattern  = oldID + @"U[0-9]+$";
+    string crystalPattern    = oldID + @"Y[0-9]+$";
+    string testPointPattern  = oldID + @"TP[0-9]+$";
 
-    Match resistorMatch  = Regex.Match(csaFileLine, resistorPattern);
-    Match capacitorMatch = Regex.Match(csaFileLine, capacitorPattern);
-    Match inductorMatch  = Regex.Match(csaFileLine, inductorPattern);
-    Match connectorMatch = Regex.Match(csaFileLine, connectorPattern);
-    Match microPartMatch = Regex.Match(csaFileLine, microPartPattern);
-    Match crystalMatch  = Regex.Match(csaFileLine, crystalPattern);
+    Match resistorMatch   = Regex.Match(csaFileLine, resistorPattern);
+    Match capacitorMatch  = Regex.Match(csaFileLine, capacitorPattern);
+    Match inductorMatch   = Regex.Match(csaFileLine, inductorPattern);
+    Match transistorMatch = Regex.Match(csaFileLine, transistorPattern);
+    Match diodeMatch      = Regex.Match(csaFileLine, diodePattern);
+    Match connectorMatch  = Regex.Match(csaFileLine, connectorPattern);
+    Match microPartMatch  = Regex.Match(csaFileLine, microPartPattern);
+    Match crystalMatch    = Regex.Match(csaFileLine, crystalPattern);
     Match testPointMatch  = Regex.Match(csaFileLine, testPointPattern);
 
     if(resistorMatch.Success)
     {
         matchResultIndex = resistorMatch.Index;
+        matchResultValue = resistorMatch.Value;
     }
     else if(capacitorMatch.Success)
     {
         matchResultIndex = capacitorMatch.Index;
+        matchResultValue = capacitorMatch.Value;
     }
     else if(inductorMatch.Success)
     {
         matchResultIndex = inductorMatch.Index;
+        matchResultValue = inductorMatch.Value;
+    }
+    else if (transistorMatch.Success)
+    {
+        matchResultIndex = transistorMatch.Index;
+        matchResultValue = transistorMatch.Value;
+    }
+    else if (diodeMatch.Success)
+    {
+        matchResultIndex = diodeMatch.Index;
+        matchResultValue = diodeMatch.Value;
     }
     else if(connectorMatch.Success)
     {
         matchResultIndex = connectorMatch.Index;
+        matchResultValue = connectorMatch.Value;
     }
     else if(microPartMatch.Success)
     {
         matchResultIndex = microPartMatch.Index;
+        matchResultValue = microPartMatch.Value;
     }
     else if(crystalMatch.Success)
     {
         matchResultIndex = crystalMatch.Index;
+        matchResultValue = crystalMatch.Value;
     }
     else if(testPointMatch.Success)
     {
         matchResultIndex = testPointMatch.Index;
+        matchResultValue = testPointMatch.Value;
     }
 
     if(matchResultIndex != 0)
     {
-        outputResult = csaFileLine.Insert(matchResultIndex, prefixID);
+        string newRefDesFromResult = matchResultValue.Replace(oldID, newID);
+        outputResult = csaFileLine.Replace(matchResultValue, " " + newRefDesFromResult);
     }
     
     return outputResult; 
 }
 
-void DeleteNonCsaFiles(string directory){
+void DeleteNonCsaFiles(string directory)
+{
+    string[] allFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories);
 
+    foreach(var file in allFiles)
+    {
+        if (file.Contains(".csv") || file.Contains(".csb") ||
+            file.Contains(".cpc") || file.Contains(".dcf"))
+        {
+            File.Delete(file);
+        }
+    }
 }
